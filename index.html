@@ -112,10 +112,15 @@
     const client = mqtt.connect('wss://mqtt-dashboard.com:8884/mqtt');
     const switchElement = document.getElementById('toggleSwitch');
     const mqttStatus = document.getElementById('mqttStatus');
+    const deviceNameInput = document.getElementById('deviceName');
 
     client.on('connect', function () {
       mqttStatus.textContent = '🟢 Đã kết nối MQTT!';
       mqttStatus.className = 'status connected';
+
+      // Subscribe để nhận lệnh trạng thái và tên
+      client.subscribe('esp32/status');
+      client.subscribe('esp32/name');
     });
 
     client.on('error', function () {
@@ -123,6 +128,7 @@
       mqttStatus.className = 'status disconnected';
     });
 
+    // Khi người dùng bật/tắt công tắc
     switchElement.addEventListener('change', function () {
       if (this.checked) {
         sendCommand("bật đèn");
@@ -131,10 +137,28 @@
       }
     });
 
+    // Gửi lệnh lên MQTT
     function sendCommand(text) {
       client.publish("esp32/text", text);
       console.log("📤 Đã gửi:", text);
     }
+
+    // Gửi tên thiết bị khi người dùng nhập
+    deviceNameInput.addEventListener("input", function () {
+      client.publish("esp32/name", deviceNameInput.value);
+    });
+
+    // Lắng nghe phản hồi từ MQTT
+    client.on('message', function (topic, message) {
+      const msg = message.toString();
+      if (topic === 'esp32/status') {
+        switchElement.checked = (msg === 'on');
+      } else if (topic === 'esp32/name') {
+        if (document.activeElement !== deviceNameInput) {
+          deviceNameInput.value = msg;
+        }
+      }
+    });
   </script>
 </body>
 </html>
