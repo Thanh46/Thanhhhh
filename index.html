@@ -2,75 +2,69 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Công tắc thông minh TBT</title>
+  <title>Điều khiển ESP32</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f0f2f5;
+      background: #f0f2f5;
       margin: 0;
       padding: 0;
     }
 
-    .container {
-      margin-top: 100px;
-    }
-
-    .login-box, .control-box {
-      background-color: #fff;
-      padding: 30px;
+    .box {
+      background: #fff;
+      padding: 20px;
+      margin: 80px auto;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       border-radius: 10px;
-      width: 300px;
-      margin: auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    input[type="text"], input[type="password"] {
-      width: 100%;
+    input[type="text"],
+    input[type="password"] {
+      width: calc(100% - 20px);
       padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
+      margin: 10px auto;
       border: 1px solid #ccc;
-      font-size: 16px;
-      box-sizing: border-box;
+      border-radius: 5px;
     }
 
     .password-wrapper {
       position: relative;
       width: 100%;
+      margin: 10px auto;
     }
 
     .password-wrapper input {
+      width: calc(100% - 40px);
       padding-right: 40px;
     }
 
     .eye-btn {
       position: absolute;
       right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
+      top: 10px;
       cursor: pointer;
-      font-size: 18px;
     }
 
     button {
-      background-color: #4CAF50;
+      padding: 10px 20px;
+      background: #28a745;
       color: white;
       border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 8px;
+      border-radius: 5px;
       cursor: pointer;
       margin-top: 10px;
     }
 
-    .hidden {
-      display: none;
+    button:hover {
+      background: #218838;
     }
 
-    h1 {
-      margin-bottom: 20px;
+    .hidden {
+      display: none;
     }
 
     .status {
@@ -78,89 +72,56 @@
       font-weight: bold;
     }
 
-    .connected { color: green; }
-    .disconnected { color: red; }
-
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 80px;
-      height: 40px;
+    .connected {
+      color: green;
     }
 
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+    .disconnected {
+      color: red;
     }
 
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 40px;
+    .switch-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 0;
     }
 
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 32px;
-      width: 32px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
+    .switch-container label {
+      font-weight: bold;
     }
 
-    input:checked + .slider {
-      background-color: #4CAF50;
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(40px);
-    }
-
-    #deviceName {
-      margin-bottom: 20px;
-      padding: 8px;
-      font-size: 16px;
-      width: 100%;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+    input[type="checkbox"] {
+      transform: scale(1.3);
     }
   </style>
 </head>
 <body>
-  <div class="container">
 
-    <!-- Login box -->
-    <div class="login-box" id="loginBox">
-      <h1>Đăng nhập</h1>
-      <input type="text" id="username" placeholder="Tên đăng nhập">
-      <div class="password-wrapper">
-        <input type="password" id="password" placeholder="Mật khẩu">
-        <span class="eye-btn" onclick="togglePassword()">👁️</span>
-      </div>
-      <label><input type="checkbox" id="rememberMe"> Gợi ý tài khoản lần sau</label>
-      <button onclick="login()">Đăng nhập</button>
+  <div class="box" id="loginBox">
+    <h2>Đăng nhập</h2>
+    <input type="text" id="username" placeholder="Tài khoản"><br>
+    <div class="password-wrapper">
+      <input type="password" id="password" placeholder="Mật khẩu">
+      <span class="eye-btn" onclick="togglePassword()">👁️</span>
+    </div>
+    <label>
+      <input type="checkbox" id="rememberMe"> Gợi ý tài khoản lần sau
+    </label><br>
+    <button onclick="login()">Đăng nhập</button>
+  </div>
+
+  <div class="box hidden" id="controlBox">
+    <h2>Điều khiển thiết bị</h2>
+    <div class="status" id="mqttStatus">⏳ Đang kết nối...</div>
+
+    <div class="switch-container">
+      <label>Bật/Tắt đèn</label>
+      <input type="checkbox" id="toggleSwitch">
     </div>
 
-    <!-- Control box -->
-    <div class="control-box hidden" id="controlBox">
-      <h1>💡 Công tắc thông minh TBT</h1>
-      <div class="status" id="mqttStatus">⏳ Đang kết nối MQTT...</div>
-
-      <input type="text" id="deviceName" placeholder="Nhập tên thiết bị...">
-
-      <label class="switch">
-        <input type="checkbox" id="toggleSwitch">
-        <span class="slider"></span>
-      </label>
-    </div>
+    <input type="text" id="deviceName" placeholder="Tên thiết bị">
   </div>
 
   <script>
@@ -180,12 +141,16 @@
         if (remember) {
           localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, pass }));
         }
-        document.getElementById("loginBox").classList.add("hidden");
-        document.getElementById("controlBox").classList.remove("hidden");
-        connectMQTT();
+        showControlUI();
       } else {
         alert("Sai tài khoản hoặc mật khẩu!");
       }
+    }
+
+    function showControlUI() {
+      document.getElementById("loginBox").classList.add("hidden");
+      document.getElementById("controlBox").classList.remove("hidden");
+      connectMQTT();
     }
 
     window.addEventListener('load', () => {
@@ -201,6 +166,7 @@
       client = mqtt.connect('wss://mqtt-dashboard.com:8884/mqtt');
       const switchElement = document.getElementById('toggleSwitch');
       const mqttStatus = document.getElementById('mqttStatus');
+      const deviceNameInput = document.getElementById("deviceName");
 
       client.on('connect', function () {
         mqttStatus.textContent = '🟢 Đã kết nối MQTT!';
@@ -208,6 +174,7 @@
 
         client.subscribe('esp32/status');
         client.subscribe('esp32/name');
+
         client.publish('esp32/requestSync', '');
       });
 
@@ -217,14 +184,11 @@
       });
 
       switchElement.addEventListener('change', function () {
-        if (this.checked) {
-          client.publish('esp32/text', 'bật đèn');
-        } else {
-          client.publish('esp32/text', 'tắt đèn');
-        }
+        const cmd = this.checked ? "bật đèn" : "tắt đèn";
+        client.publish('esp32/text', cmd);
       });
 
-      document.getElementById("deviceName").addEventListener('change', function () {
+      deviceNameInput.addEventListener('change', function () {
         client.publish('esp32/name', this.value);
       });
 
@@ -234,10 +198,11 @@
           switchElement.checked = (msg === 'on');
         }
         if (topic === 'esp32/name') {
-          document.getElementById("deviceName").value = msg;
+          deviceNameInput.value = msg;
         }
       });
     }
   </script>
+
 </body>
 </html>
