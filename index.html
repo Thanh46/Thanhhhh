@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>Công tắc thông minh TBT</title>
@@ -8,238 +8,113 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      margin-top: 100px;
-    }
-
-    .login-box, .control-box {
-      background-color: #fff;
       padding: 30px;
-      border-radius: 10px;
-      width: 300px;
-      margin: auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      background: #f0f4f8;
     }
-
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      box-sizing: border-box;
+    h2 {
+      color: #333;
     }
-
-    .password-wrapper {
-      position: relative;
-      width: 100%;
+    .switch-container {
+      margin-top: 20px;
     }
-
-    .password-wrapper input {
-      padding-right: 40px;
-    }
-
-    .eye-btn {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
+    .switch-label {
       font-size: 18px;
     }
-
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    .status {
-      margin: 10px;
-      font-weight: bold;
-    }
-
-    .connected { color: green; }
-    .disconnected { color: red; }
-
     .switch {
       position: relative;
       display: inline-block;
-      width: 80px;
-      height: 40px;
+      width: 60px;
+      height: 34px;
     }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
+    .switch input { display: none; }
     .slider {
       position: absolute;
       cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
       background-color: #ccc;
       transition: .4s;
-      border-radius: 40px;
+      border-radius: 34px;
     }
-
     .slider:before {
       position: absolute;
       content: "";
-      height: 32px;
-      width: 32px;
-      left: 4px;
-      bottom: 4px;
+      height: 26px; width: 26px;
+      left: 4px; bottom: 4px;
       background-color: white;
       transition: .4s;
       border-radius: 50%;
     }
-
     input:checked + .slider {
       background-color: #4CAF50;
     }
-
     input:checked + .slider:before {
-      transform: translateX(40px);
+      transform: translateX(26px);
     }
-
     #deviceName {
-      margin-bottom: 20px;
+      margin-top: 20px;
       padding: 8px;
+      width: 220px;
       font-size: 16px;
-      width: 100%;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+    }
+    .status {
+      margin-top: 15px;
+      font-size: 14px;
+      color: gray;
+    }
+    .status.connected {
+      color: green;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-
-    <!-- Login box -->
-    <div class="login-box" id="loginBox">
-      <h1>Đăng nhập</h1>
-      <input type="text" id="username" placeholder="Tên đăng nhập">
-      <div class="password-wrapper">
-        <input type="password" id="password" placeholder="Mật khẩu">
-        <span class="eye-btn" onclick="togglePassword()">👁️</span>
-      </div>
-      <button onclick="login()">Đăng nhập</button>
-    </div>
-
-    <!-- Control box -->
-    <div class="control-box hidden" id="controlBox">
-      <h1>💡 Công tắc thông minh TBT</h1>
-      <div class="status" id="mqttStatus">⏳ Đang kết nối MQTT...</div>
-
-      <input type="text" id="deviceName" placeholder="Nhập tên thiết bị...">
-
-      <label class="switch">
-        <input type="checkbox" id="toggleSwitch">
-        <span class="slider"></span>
-      </label>
-    </div>
+  <h2>Công tắc thông minh TBT</h2>
+  <input id="deviceName" placeholder="Nhập tên thiết bị..." />
+  <div class="switch-container">
+    <label class="switch">
+      <input type="checkbox" id="toggleSwitch">
+      <span class="slider"></span>
+    </label>
   </div>
+  <div id="mqttStatus" class="status">🔌 Đang kết nối...</div>
 
   <script>
-    // Toggle ẩn/hiện mật khẩu
-    function togglePassword() {
-      const passInput = document.getElementById("password");
-      passInput.type = passInput.type === "password" ? "text" : "password";
-    }
+    const client = mqtt.connect('wss://mqtt-dashboard.com:8884/mqtt');
+    const switchElement = document.getElementById('toggleSwitch');
+    const mqttStatus = document.getElementById('mqttStatus');
+    const deviceNameInput = document.getElementById('deviceName');
 
-    // Đăng nhập
-    function login() {
-      const user = document.getElementById("username").value.trim();
-      const pass = document.getElementById("password").value;
+    // Khi kết nối thành công
+    client.on('connect', function () {
+      mqttStatus.textContent = '🟢 Đã kết nối MQTT!';
+      mqttStatus.className = 'status connected';
+      client.subscribe('esp32/status');
+      client.publish('esp32/text', 'get status');
+    });
 
-      if (user === "Chu_may_001" && pass === "123456789") {
-        document.getElementById("loginBox").classList.add("hidden");
-        document.getElementById("controlBox").classList.remove("hidden");
-        connectMQTT();
-      } else {
-        alert("Sai tài khoản hoặc mật khẩu!");
+    // Khi nhận trạng thái từ ESP32
+    client.on('message', function (topic, message) {
+      if (topic === 'esp32/status') {
+        const status = message.toString().trim();
+        switchElement.checked = (status === 'on');
       }
-    }
+    });
 
-    // MQTT setup
-    let client;
-    function connectMQTT() {
-      client = mqtt.connect('wss://mqtt-dashboard.com:8884/mqtt');
-      const switchElement = document.getElementById('toggleSwitch');
-      const mqttStatus = document.getElementById('mqttStatus');
+    // Khi gạt công tắc
+    switchElement.addEventListener('change', function () {
+      const command = this.checked ? 'bật đèn' : 'tắt đèn';
+      client.publish('esp32/text', command);
+    });
 
-      client.on('connect', function () {
-        mqttStatus.textContent = '🟢 Đã kết nối MQTT!';
-        mqttStatus.className = 'status connected';
+    // Tự động lưu tên thiết bị
+    deviceNameInput.addEventListener('input', function () {
+      localStorage.setItem('deviceName', this.value);
+    });
 
-        // Subcribe để đồng bộ
-        client.subscribe('esp32/status');
-        client.subscribe('esp32/name');
-
-        // Nếu có tên cũ đã lưu thì gán lại và gửi luôn
-        const savedName = localStorage.getItem("deviceName");
-        if (savedName) {
-          document.getElementById("deviceName").value = savedName;
-          client.publish('esp32/name', savedName);
-        }
-      });
-
-      client.on('error', function () {
-        mqttStatus.textContent = '🔴 Lỗi kết nối MQTT!';
-        mqttStatus.className = 'status disconnected';
-      });
-
-      // Gửi khi bật/tắt
-      switchElement.addEventListener('change', function () {
-        if (this.checked) {
-          client.publish('esp32/text', 'bật đèn');
-        } else {
-          client.publish('esp32/text', 'tắt đèn');
-        }
-      });
-
-      // Gửi tên khi thay đổi
-      document.getElementById("deviceName").addEventListener('change', function () {
-        const name = this.value;
-        client.publish('esp32/name', name);
-        localStorage.setItem("deviceName", name); // 💾 lưu vào trình duyệt
-      });
-
-      // Nhận phản hồi
-      client.on('message', function (topic, message) {
-        const msg = message.toString().trim();
-
-        if (topic === 'esp32/status') {
-          switchElement.checked = (msg === 'on');
-        }
-
-        if (topic === 'esp32/name') {
-          document.getElementById("deviceName").value = msg;
-        }
-      });
-    }
+    window.addEventListener('load', function () {
+      const savedName = localStorage.getItem('deviceName');
+      if (savedName) deviceNameInput.value = savedName;
+    });
   </script>
 </body>
 </html>
