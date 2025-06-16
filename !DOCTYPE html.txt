@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bật/Tắt LED với MQTT</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #status { margin: 10px; font-weight: bold; }
+    #switchBtn {
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    #switchBtn.off { background-color: #f44336; }
+  </style>
+</head>
+<body>
+  <h2>🔌 Điều khiển LED qua MQTT</h2>
+  <div id="status">Đang kết nối MQTT...</div>
+  <button id="switchBtn">Bật đèn</button>
+
+  <script>
+    const broker = "wss://mqtt-dashboard.com:8884/mqtt";
+    const topic = "esp32/text";
+    const clientId = "webClient_" + Math.random().toString(16).substr(2, 8);
+
+    const client = mqtt.connect(broker, {
+      clientId,
+      clean: true,
+      connectTimeout: 4000,
+      reconnectPeriod: 1000
+    });
+
+    const statusEl = document.getElementById("status");
+    const switchBtn = document.getElementById("switchBtn");
+    let ledState = false; // false = off
+
+    client.on("connect", () => {
+      statusEl.textContent = "✅ MQTT đã kết nối";
+    });
+
+    client.on("error", (err) => {
+      statusEl.textContent = "❌ Lỗi kết nối: " + err.message;
+    });
+
+    switchBtn.addEventListener("click", () => {
+      ledState = !ledState;
+      const message = ledState ? "bật đèn" : "tắt đèn";
+      client.publish(topic, message);
+      switchBtn.textContent = ledState ? "Tắt đèn" : "Bật đèn";
+      switchBtn.classList.toggle("off", !ledState);
+    });
+  </script>
+</body>
+</html>
