@@ -2,178 +2,264 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>ESP32 Điều khiển</title>
+  <title>Công tắc thông minh TBT</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     body {
-      font-family: Arial;
-      background: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
     }
-    #login, #control {
-      background: white;
+
+    .container {
+      margin-top: 100px;
+    }
+
+    .login-box, .control-box {
+      background-color: #fff;
       padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      display: none;
-      flex-direction: column;
-      gap: 15px;
-      min-width: 300px;
+      border-radius: 10px;
+      width: 300px;
+      margin: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    input {
-      padding: 10px;
+
+    input[type="text"], input[type="password"] {
       width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    button {
       padding: 10px;
-      border: none;
-      background: #4CAF50;
-      color: white;
+      margin: 10px 0;
       border-radius: 8px;
-      cursor: pointer;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
     }
-    button:hover {
-      background: #45a049;
-    }
-    .password-wrap {
+
+    .password-wrapper {
       position: relative;
+      width: 100%;
     }
-    .toggle-password {
+
+    .password-wrapper input {
+      padding-right: 40px;
+    }
+
+    .eye-btn {
       position: absolute;
-      top: 50%;
       right: 10px;
+      top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
+      font-size: 18px;
     }
-    label {
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px 5px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .status {
+      margin: 10px;
       font-weight: bold;
+    }
+
+    .connected { color: green; }
+    .disconnected { color: red; }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 80px;
+      height: 40px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 40px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 32px;
+      width: 32px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(40px);
+    }
+
+    #deviceName {
+      margin-bottom: 10px;
+      padding: 8px;
+      font-size: 16px;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
   </style>
 </head>
 <body>
+  <div class="container">
 
-<div id="login">
-  <h3>🔒 Đăng nhập</h3>
-  <label>Tài khoản</label>
-  <input type="text" id="username" placeholder="Tài khoản">
+    <!-- Login box -->
+    <div class="login-box" id="loginBox">
+      <h1>Đăng nhập</h1>
+      <input type="text" id="username" placeholder="Tên đăng nhập">
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        <span class="eye-btn" onclick="togglePassword()">👁️</span>
+      </div>
+      <label><input type="checkbox" id="rememberMe"> Gợi ý tài khoản lần sau</label>
+      <button onclick="login()">Đăng nhập</button>
+    </div>
 
-  <label>Mật khẩu</label>
-  <div class="password-wrap">
-    <input type="password" id="password" placeholder="Mật khẩu">
-    <span class="toggle-password" onclick="togglePassword()">👁️</span>
+    <!-- Control box -->
+    <div class="control-box hidden" id="controlBox">
+      <h1>💡 Công tắc thông minh TBT</h1>
+      <div class="status" id="mqttStatus">⏳ Đang kết nối MQTT...</div>
+
+      <input type="text" id="deviceName" placeholder="Tên thiết bị..." readonly>
+      <button id="editNameBtn">✏️ Sửa tên</button>
+      <button id="saveNameBtn" disabled>💾 Lưu tên</button>
+
+      <br><br>
+      <label class="switch">
+        <input type="checkbox" id="toggleSwitch">
+        <span class="slider"></span>
+      </label>
+    </div>
   </div>
 
-  <button onclick="checkLogin()">Đăng nhập</button>
-</div>
+  <script>
+    const STORAGE_KEY = 'tbt_credentials';
 
-<div id="control">
-  <h3>📱 Điều khiển ESP32</h3>
-  <label>Tên thiết bị:</label>
-  <input id="deviceName" placeholder="Tên thiết bị ESP32">
-
-  <button onclick="toggleLED()">Bật/Tắt đèn</button>
-  <p>Trạng thái đèn: <span id="ledStatus">chưa xác định</span></p>
-  <button onclick="logout()">🚪 Đăng xuất</button>
-</div>
-
-<script>
-  const correctUser = "Chu_may_001";
-  const correctPass = "123456789";
-
-  const loginBox = document.getElementById("login");
-  const controlBox = document.getElementById("control");
-  const deviceNameInput = document.getElementById("deviceName");
-  const ledStatusText = document.getElementById("ledStatus");
-
-  const savedUser = localStorage.getItem("username");
-  const savedPass = localStorage.getItem("password");
-
-  if (savedUser === correctUser && savedPass === correctPass) {
-    showControl();
-  } else {
-    loginBox.style.display = "flex";
-  }
-
-  function togglePassword() {
-    const passInput = document.getElementById("password");
-    passInput.type = passInput.type === "password" ? "text" : "password";
-  }
-
-  function checkLogin() {
-    const u = document.getElementById("username").value.trim();
-    const p = document.getElementById("password").value.trim();
-    if (u === correctUser && p === correctPass) {
-      if (confirm("Bạn có muốn lưu đăng nhập không?")) {
-        localStorage.setItem("username", u);
-        localStorage.setItem("password", p);
-      }
-      showControl();
-    } else {
-      alert("Sai tài khoản hoặc mật khẩu!");
+    function togglePassword() {
+      const passInput = document.getElementById("password");
+      passInput.type = passInput.type === "password" ? "text" : "password";
     }
-  }
 
-  function logout() {
-    localStorage.clear();
-    location.reload();
-  }
+    function login() {
+      const user = document.getElementById("username").value.trim();
+      const pass = document.getElementById("password").value;
+      const remember = document.getElementById("rememberMe").checked;
 
-  function showControl() {
-    loginBox.style.display = "none";
-    controlBox.style.display = "flex";
-    setupMQTT();
-  }
-
-  let client;
-  let ledState = false;
-
-  function setupMQTT() {
-    client = mqtt.connect("wss://mqtt-dashboard.com:8884");
-
-    client.on("connect", () => {
-      console.log("MQTT kết nối");
-      client.subscribe("esp32/status");
-      client.subscribe("esp32/name");
-      client.publish("esp32/requestSync", "sync");
-    });
-
-    client.on("message", (topic, message) => {
-      const msg = message.toString();
-      if (topic === "esp32/status") {
-        ledState = msg === "on";
-        ledStatusText.innerText = ledState ? "đang bật" : "đang tắt";
+      if (user === "Chu_may_001" && pass === "123456789") {
+        if (remember) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, pass }));
+        }
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("controlBox").classList.remove("hidden");
+        connectMQTT();
+      } else {
+        alert("Sai tài khoản hoặc mật khẩu!");
       }
-      if (topic === "esp32/name") {
-        deviceNameInput.value = msg;
+    }
+
+    window.addEventListener('load', () => {
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (stored) {
+        document.getElementById("username").value = stored.user;
+        document.getElementById("password").value = stored.pass;
       }
     });
-  }
 
-  function toggleLED() {
-    const cmd = ledState ? "tắt đèn" : "bật đèn";
-    client.publish("esp32/text", cmd);
-  }
+    let client;
 
-  function sendDeviceName() {
-    const name = deviceNameInput.value.trim();
-    if (name !== "") {
-      client.publish("esp32/name", name);
+    function connectMQTT() {
+      client = mqtt.connect('wss://mqtt-dashboard.com:8884/mqtt');
+      const switchElement = document.getElementById('toggleSwitch');
+      const mqttStatus = document.getElementById('mqttStatus');
+
+      client.on('connect', function () {
+        mqttStatus.textContent = '🟢 Đã kết nối MQTT!';
+        mqttStatus.className = 'status connected';
+
+        client.subscribe('esp32/status');
+        client.subscribe('esp32/name');
+        client.publish('esp32/requestSync', '');
+      });
+
+      client.on('error', function () {
+        mqttStatus.textContent = '🔴 Lỗi kết nối MQTT!';
+        mqttStatus.className = 'status disconnected';
+      });
+
+      switchElement.addEventListener('change', function () {
+        if (this.checked) {
+          client.publish('esp32/text', 'bật đèn');
+        } else {
+          client.publish('esp32/text', 'tắt đèn');
+        }
+      });
+
+      // Tên thiết bị sửa/lưu
+      const nameInput = document.getElementById("deviceName");
+      const editBtn = document.getElementById("editNameBtn");
+      const saveBtn = document.getElementById("saveNameBtn");
+
+      editBtn.addEventListener("click", () => {
+        nameInput.readOnly = false;
+        nameInput.focus();
+        saveBtn.disabled = false;
+      });
+
+      saveBtn.addEventListener("click", () => {
+        const newName = nameInput.value.trim();
+        if (newName !== "") {
+          client.publish("esp32/name", newName);
+          nameInput.readOnly = true;
+          saveBtn.disabled = true;
+        }
+      });
+
+      client.on('message', function (topic, message) {
+        const msg = message.toString().trim();
+        if (topic === 'esp32/status') {
+          switchElement.checked = (msg === 'on');
+        }
+        if (topic === 'esp32/name') {
+          if (nameInput.readOnly) {
+            nameInput.value = msg;
+          }
+        }
+      });
     }
-  }
-
-  deviceNameInput.addEventListener("change", sendDeviceName);
-  deviceNameInput.addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-      sendDeviceName();
-      deviceNameInput.blur();
-    }
-  });
-</script>
-
+  </script>
 </body>
 </html>
