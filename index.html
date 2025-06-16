@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Công tắc thông minh TBT</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+      background-color: #f8f9fa;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    .status {
+      margin: 10px;
+      font-weight: bold;
+    }
+
+    .connected {
+      color: green;
+    }
+
+    .disconnected {
+      color: red;
+    }
+
+    .control-box {
+      display: inline-block;
+      border: 2px solid black;
+      border-radius: 10px;
+      padding: 30px;
+      margin-top: 30px;
+      background-color: #ffffff;
+    }
+
+    .device-name {
+      margin-bottom: 30px;
+    }
+
+    .device-name input {
+      padding: 8px 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 250px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 80px;
+      height: 40px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 40px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 32px;
+      width: 32px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(40px);
+    }
+  </style>
+</head>
+<body>
+  <h1>💡 Công tắc thông minh TBT</h1>
+  <div class="status" id="mqttStatus">⏳ Đang kết nối MQTT...</div>
+
+  <div class="control-box">
+    <div class="device-name">
+      <input type="text" id="deviceName" placeholder="Nhập tên thiết bị..." />
+    </div>
+
+    <label class="switch">
+      <input type="checkbox" id="toggleSwitch">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <script>
+    const client = mqtt.connect('wss://mqtt-dashboard.com:8884/mqtt');
+    const switchElement = document.getElementById('toggleSwitch');
+    const mqttStatus = document.getElementById('mqttStatus');
+
+    client.on('connect', function () {
+      mqttStatus.textContent = '🟢 Đã kết nối MQTT!';
+      mqttStatus.className = 'status connected';
+    });
+
+    client.on('error', function () {
+      mqttStatus.textContent = '🔴 Lỗi kết nối MQTT!';
+      mqttStatus.className = 'status disconnected';
+    });
+
+    switchElement.addEventListener('change', function () {
+      if (this.checked) {
+        sendCommand("bật đèn");
+      } else {
+        sendCommand("tắt đèn");
+      }
+    });
+
+    function sendCommand(text) {
+      client.publish("esp32/text", text);
+      console.log("📤 Đã gửi:", text);
+    }
+  </script>
+</body>
+</html>
