@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>SMART MODULE</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap?display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'Roboto', sans-serif;
@@ -278,6 +278,7 @@
 <script>
   const STORAGE_KEY = 'tbt_credentials';
   const DEVICE_COUNT_KEY = 'tbt_device_count';
+  const DEVICE_NAMES_KEY = 'tbt_device_names'; // Key để lưu tên thiết bị
   let client;
   let deviceNames = Array(8).fill("");
   let scheduleHistory = {};
@@ -342,6 +343,11 @@
       document.getElementById("username").value = stored.user;
       document.getElementById("password").value = stored.pass;
     }
+    // Tải lại tên thiết bị từ localStorage
+    const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
+    for (let i = 0; i < 8; i++) {
+      deviceNames[i] = savedDeviceNames[i] || "";
+    }
   };
 
   function updateDeviceGridLayout() {
@@ -373,7 +379,7 @@
       const div = document.createElement("div");
       div.className = "device-group";
       div.innerHTML = `
-        <input type="text" id="deviceName${i}" placeholder="Thiết bị ${i + 1}" readonly>
+        <input type="text" id="deviceName${i}" placeholder="Thiết bị ${i + 1}" readonly value="${deviceNames[i] || ''}">
         <div class="button-group">
           <button id="editNameBtn${i}">Sửa</button>
           <button id="saveNameBtn${i}" disabled>Lưu</button>
@@ -403,6 +409,10 @@
           nameInput.readOnly = true;
           saveBtn.disabled = true;
           deviceNames[i] = newName;
+          // Lưu tên thiết bị vào localStorage
+          const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
+          savedDeviceNames[i] = newName;
+          localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
           updateDeviceSelector();
           updateScheduleNotes();
         }
@@ -455,6 +465,10 @@
         } else if (topic === "esp32/device" + i + "/name") {
           document.getElementById("deviceName" + i).value = msg;
           deviceNames[i] = msg;
+          // Cập nhật localStorage khi nhận tên từ ESP32
+          const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
+          savedDeviceNames[i] = msg;
+          localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
           updateDeviceSelector();
           updateScheduleNotes();
         } else if (topic === "esp32/device" + i + "/setOnTime") {
@@ -569,6 +583,11 @@
     recognition.start();
     document.getElementById("voiceResult").textContent = "Đang nghe...";
 
+    // Dừng ghi âm sau 3 giây
+    setTimeout(() => {
+      recognition.stop();
+    }, 3000);
+
     recognition.onresult = function(event) {
       const transcript = event.results[0][0].transcript.toLowerCase();
       document.getElementById("voiceResult").textContent = `Bạn nói: "${transcript}"`;
@@ -602,6 +621,10 @@
 
     recognition.onerror = function() {
       document.getElementById("voiceResult").textContent = "Lỗi khi nhận giọng nói!";
+    };
+
+    recognition.onend = function() {
+      document.getElementById("voiceResult").textContent = document.getElementById("voiceResult").textContent || "Ghi âm đã kết thúc!";
     };
   }
 </script>
