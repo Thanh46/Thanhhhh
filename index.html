@@ -2,632 +2,188 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>SMART MODULE</title>
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <title>Chuyển và Tải ảnh BMP</title>
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
+      font-family: Arial, sans-serif;
       padding: 20px;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      min-height: 100vh;
-      color: #e0e0e0;
-      overflow-x: hidden;
-    }
-    h1 {
-      font-size: 28px;
-      color: #00d4ff;
-      text-align: left;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #clock {
-      font-size: 16px;
-      color: #b3e5fc;
-      animation: none; /* Tạm vô hiệu hóa animation */
-    }
-    .box {
-      max-width: 1000px;
+      max-width: 600px;
       margin: 0 auto;
-      padding: 30px;
-      border-radius: 15px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      background-color: #f4f4f4;
     }
-    input, select, button {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      box-sizing: border-box;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      font-size: 14px;
-      background: rgba(255, 255, 255, 0.05);
-      color: #e0e0e0;
-      transition: all 0.3s ease;
-    }
-    input:focus, select:focus {
-      border-color: #00d4ff;
-      outline: none;
-      box-shadow: 0 0 10px #00d4ff;
-    }
-    .hidden { display: none; }
-    .status {
+    h2 {
+      color: #333;
       text-align: center;
+    }
+    input[type="file"], button {
       margin: 10px 0;
-      font-size: 24px;
-    }
-    .mqtt-led {
-      width: 10px;
-      height: 10px;
-      background: #ff0000;
-      border-radius: 50%;
-      display: inline-block;
-      margin-left: 10px;
-      transition: background 0.5s;
-    }
-    .mqtt-led.connected {
-      background: #00ff00;
-    }
-    .device-grid {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .device-group {
       padding: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.05);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
-      text-align: center;
-    }
-    .device-group:hover {
-      transform: translateY(-5px);
-    }
-    .device-group input {
-      width: 80%;
-      margin: 5px auto;
-      font-size: 12px;
-    }
-    .device-group .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 5px;
-    }
-    .device-group button {
-      width: 40px;
-      padding: 5px;
-      font-size: 12px;
-    }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
-      margin-top: 5px;
-    }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #555;
-      transition: .4s;
-      border-radius: 34px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: #fff;
-      transition: .4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #00ff95;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    .slider:hover {
-      background-color: #777;
-    }
-    input:checked + .slider:hover {
-      background-color: #00cc76;
+      width: 100%;
+      box-sizing: border-box;
     }
     button {
-      background: linear-gradient(45deg, #00d4ff, #007bff);
+      background-color: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
-      padding: 12px;
-      border-radius: 8px;
-      transition: all 0.3s ease;
+      font-size: 16px;
     }
     button:hover {
-      background: linear-gradient(45deg, #00aaff, #0056b3);
-      transform: scale(1.05);
+      background-color: #45a049;
     }
-    #voiceResult {
+    #downloadLink {
+      display: none;
+      text-align: center;
+      margin: 10px 0;
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    #downloadLink:hover {
+      text-decoration: underline;
+    }
+    #status {
+      color: green;
       text-align: center;
       margin-top: 10px;
-      font-size: 14px;
-      color: #00ff95;
-      animation: none; /* Tạm vô hiệu hóa animation */
     }
-    #wifiStatusText {
-      font-size: 14px;
-      color: #b3e5fc;
-      margin-top: 10px;
-      text-align: center;
+    #uploadForm {
+      display: none;
     }
-    @keyframes fadeIn {
-      from { opacity: 0.7; }
-      to { opacity: 1; }
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    canvas {
+      display: none;
     }
   </style>
 </head>
 <body>
+  <h2>🖼️ Chuyển ảnh bất kỳ sang BMP 24-bit (240x240)</h2>
+  <input type="file" id="imageInput" accept="image/*"><br><br>
+  <button onclick="convertToBMP()">Chuyển và Tải về BMP</button>
+  <br><br>
+  <a id="downloadLink">📥 Nhấn để tải file BMP</a>
+  <br><br>
+  <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+    <input type="file" id="bmpFile" name="file">
+    <input type="submit" value="📤 Gửi lên ESP32">
+  </form>
+  <p id="status"></p>
+  <canvas id="canvas" width="240" height="240"></canvas>
 
-<div class="box" id="loginBox">
-  <div class="header">
-    <h1>SMART MODULE</h1>
-    <div id="clock"></div>
-  </div>
-  <div class="status" id="mqttStatus">⏳ <span class="mqtt-led" id="mqttLed"></span></div>
-  <div id="wifiStatusText"></div>
-  <input type="text" id="username" placeholder="Tên đăng nhập">
-  <input type="password" id="password" placeholder="Mật khẩu">
-  <label><input type="checkbox" id="rememberMe"> Nhớ tài khoản</label>
-  <button onclick="login()">Đăng nhập</button>
-</div>
-
-<div class="box hidden" id="deviceSelectBox">
-  <div class="header">
-    <h1>Chọn số thiết bị</h1>
-    <div id="clock"></div>
-  </div>
-  <div class="status" id="mqttStatus">⏳ <span class="mqtt-led" id="mqttLed"></span></div>
-  <div id="wifiStatusText"></div>
-  <label>Số thiết bị điều khiển (1-8):</label>
-  <select id="deviceCount">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
-  </select>
-  <button onclick="saveDeviceCount()">Lưu</button>
-  <button onclick="applyDeviceCount()">Áp dụng</button>
-</div>
-
-<div class="box hidden" id="controlBox">
-  <div class="header">
-    <h1>SMART MODULE</h1>
-    <div id="clock"></div>
-  </div>
-  <div class="status" id="mqttStatus">⏳ <span class="mqtt-led" id="mqttLed"></span></div>
-  <div id="wifiStatusText"></div>
-  <button onclick="showPage('deviceSelectBox')">Sửa số thiết bị</button>
-  <div class="device-grid" id="devices"></div>
-  <button onclick="toggleAll()">Mở/Tắt tất cả</button>
-  <button onclick="startVoice()">Nói để điều khiển</button>
-  <div id="voiceResult"></div>
-  <button onclick="showPage('scheduleBox')">Hẹn giờ</button>
-  <button onclick="logout()">Đăng xuất</button>
-</div>
-
-<div class="box hidden" id="scheduleBox">
-  <div class="header">
-    <h1>SMART MODULE - Hẹn giờ</h1>
-    <div id="clock"></div>
-  </div>
-  <div class="status" id="mqttStatus">⏳ <span class="mqtt-led" id="mqttLed"></span></div>
-  <div id="wifiStatusText"></div>
-  <select id="deviceSelector"></select>
-  <label>Giờ mở:</label>
-  <input type="time" id="onTime">
-  <button onclick="setTime('on')">Đặt giờ mở</button>
-  <button onclick="clearTime('on')">Xóa</button>
-  <div id="onTimeStatus"></div>
-
-  <label>Giờ tắt:</label>
-  <input type="time" id="offTime">
-  <button onclick="setTime('off')">Đặt giờ tắt</button>
-  <button onclick="clearTime('off')">Xóa</button>
-  <div id="offTimeStatus"></div>
-
-  <div class="schedule-note" id="scheduleNotes">
-    <strong>Lịch sử hẹn giờ:</strong><br>
-    <span id="scheduleNoteContent"></span>
-  </div>
-
-  <button onclick="clearAllSchedules()">Xóa tất cả</button>
-  <button onclick="showPage('controlBox')">Trở về</button>
-</div>
-
-<script>
-  const STORAGE_KEY = 'tbt_credentials';
-  const DEVICE_COUNT_KEY = 'tbt_device_count';
-  const DEVICE_NAMES_KEY = 'tbt_device_names'; // Key để lưu tên thiết bị
-  let client;
-  let deviceNames = Array(8).fill("");
-  let scheduleHistory = {};
-  let deviceCount = parseInt(localStorage.getItem(DEVICE_COUNT_KEY)) || 0;
-
-  function showPage(id) {
-    ['loginBox', 'deviceSelectBox', 'controlBox', 'scheduleBox'].forEach(box =>
-      document.getElementById(box).classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-  }
-
-  function updateClock() {
-    const now = new Date();
-    document.querySelectorAll('#clock').forEach(clock => {
-      clock.textContent = now.toLocaleString('vi-VN');
-    });
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
-
-  function login() {
-    const user = document.getElementById("username").value.trim();
-    const pass = document.getElementById("password").value;
-    const remember = document.getElementById("rememberMe").checked;
-    if (user === "Chu_may_001" && pass === "123456789") {
-      if (remember) localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, pass }));
-      if (deviceCount > 0) {
-        showPage('controlBox');
-        connectMQTT();
-      } else {
-        showPage('deviceSelectBox');
+  <script>
+    function convertToBMP() {
+      const fileInput = document.getElementById('imageInput');
+      const status = document.getElementById('status');
+      if (!fileInput.files[0]) {
+        status.textContent = "📂 Vui lòng chọn ảnh!";
+        status.style.color = 'red';
+        return;
       }
-    } else {
-      alert("Sai tài khoản hoặc mật khẩu!");
-    }
-  }
 
-  function saveDeviceCount() {
-    deviceCount = parseInt(document.getElementById('deviceCount').value);
-    localStorage.setItem(DEVICE_COUNT_KEY, deviceCount);
-    if (client && client.connected()) {
-      console.log(`Gửi: esp32/setDeviceCount - ${deviceCount}`);
-      client.publish("esp32/setDeviceCount", deviceCount.toString());
-    }
-  }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('canvas');
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, 240, 240);
+          ctx.drawImage(img, 0, 0, 240, 240);
 
-  function applyDeviceCount() {
-    if (deviceCount > 0) {
-      showPage('controlBox');
-      connectMQTT();
-    }
-  }
+          const imageData = ctx.getImageData(0, 0, 240, 240);
+          const bmp = createBMP(imageData);
+          const blob = new Blob([bmp], { type: 'image/bmp' });
 
-  function logout() {
-    localStorage.removeItem(STORAGE_KEY);
-    showPage('loginBox');
-  }
+          // Display BMP download link
+          const link = document.getElementById('downloadLink');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'image.bmp';
+          link.textContent = '📥 Nhấn để tải file BMP';
+          link.style.display = 'inline';
 
-  window.onload = () => {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (stored) {
-      document.getElementById("username").value = stored.user;
-      document.getElementById("password").value = stored.pass;
-    }
-    // Tải lại tên thiết bị từ localStorage
-    const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
-    for (let i = 0; i < 8; i++) {
-      deviceNames[i] = savedDeviceNames[i] || "";
-    }
-  };
-
-  function updateDeviceGridLayout() {
-    const devicesDiv = document.getElementById("devices");
-    if (deviceCount <= 2) {
-      devicesDiv.style.gridTemplateColumns = "1fr";
-    } else if (deviceCount <= 4) {
-      devicesDiv.style.gridTemplateColumns = "repeat(2, 1fr)";
-    } else if (deviceCount <= 6) {
-      devicesDiv.style.gridTemplateColumns = "repeat(3, 1fr)";
-    } else {
-      devicesDiv.style.gridTemplateColumns = "repeat(4, 1fr)";
-    }
-  }
-
-  function updateMqttStatus(state) {
-    const mqttLed = document.getElementById("mqttLed");
-    if (state === "connected") {
-      mqttLed.classList.add('connected');
-    } else {
-      mqttLed.classList.remove('connected');
-    }
-  }
-
-  function updateDevices() {
-    const devicesDiv = document.getElementById("devices");
-    while (devicesDiv.children.length < deviceCount) {
-      const i = devicesDiv.children.length;
-      const div = document.createElement("div");
-      div.className = "device-group";
-      div.innerHTML = `
-        <input type="text" id="deviceName${i}" placeholder="Thiết bị ${i + 1}" readonly value="${deviceNames[i] || ''}">
-        <div class="button-group">
-          <button id="editNameBtn${i}">Sửa</button>
-          <button id="saveNameBtn${i}" disabled>Lưu</button>
-        </div>
-        <label>Mở/Tắt:</label>
-        <label class="switch">
-          <input type="checkbox" id="toggleSwitch${i}">
-          <span class="slider"></span>
-        </label>
-      `;
-      devicesDiv.appendChild(div);
-
-      const nameInput = document.getElementById("deviceName" + i);
-      const editBtn = document.getElementById("editNameBtn" + i);
-      const saveBtn = document.getElementById("saveNameBtn" + i);
-      const checkbox = document.getElementById("toggleSwitch" + i);
-
-      editBtn.onclick = () => {
-        nameInput.readOnly = false;
-        saveBtn.disabled = false;
+          // Auto-upload to ESP32
+          const bmpInput = document.getElementById('bmpFile');
+          const dt = new DataTransfer();
+          dt.items.add(new File([blob], "image.bmp", { type: "image/bmp" }));
+          bmpInput.files = dt.files;
+          document.getElementById('uploadForm').style.display = 'block';
+          status.textContent = '✅ Đã chuyển đổi ảnh sang BMP!';
+          status.style.color = 'green';
+        };
+        img.src = e.target.result;
       };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
 
-      saveBtn.onclick = () => {
-        const newName = nameInput.value.trim();
-        if (newName) {
-          client.publish("esp32/device" + i + "/name", newName);
-          nameInput.readOnly = true;
-          saveBtn.disabled = true;
-          deviceNames[i] = newName;
-          // Lưu tên thiết bị vào localStorage
-          const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
-          savedDeviceNames[i] = newName;
-          localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
-          updateDeviceSelector();
-          updateScheduleNotes();
+    function createBMP(imageData) {
+      const w = imageData.width;
+      const h = imageData.height;
+      const rowSize = Math.ceil(w * 3 / 4) * 4;
+      const imageSize = rowSize * h;
+      const fileSize = 54 + imageSize;
+
+      const buffer = new ArrayBuffer(fileSize);
+      const dataview = new DataView(buffer);
+      let offset = 0;
+
+      // BMP Header
+      dataview.setUint8(offset++, 0x42); // B
+      dataview.setUint8(offset++, 0x4D); // M
+      dataview.setUint32(offset, fileSize, true); offset += 4;
+      dataview.setUint32(offset, 0, true); offset += 4;
+      dataview.setUint32(offset, 54, true); offset += 4;
+
+      // DIB Header
+      dataview.setUint32(offset, 40, true); offset += 4;
+      dataview.setInt32(offset, w, true); offset += 4;
+      dataview.setInt32(offset, h, true); offset += 4;
+      dataview.setUint16(offset, 1, true); offset += 2;
+      dataview.setUint16(offset, 24, true); offset += 2;
+      dataview.setUint32(offset, 0, true); offset += 4;
+      dataview.setUint32(offset, imageSize, true); offset += 4;
+      dataview.setInt32(offset, 0, true); offset += 4;
+      dataview.setInt32(offset, 0, true); offset += 4;
+      dataview.setUint32(offset, 0, true); offset += 4;
+      dataview.setUint32(offset, 0, true); offset += 4;
+
+      // Pixel data (BGR)
+      const pixels = imageData.data;
+      for (let y = h - 1; y >= 0; y--) {
+        let rowStart = offset;
+        for (let x = 0; x < w; x++) {
+          let i = (y * w + x) * 4;
+          dataview.setUint8(offset++, pixels[i + 2]); // B
+          dataview.setUint8(offset++, pixels[i + 1]); // G
+          dataview.setUint8(offset++, pixels[i]);     // R
         }
-      };
+        while ((offset - rowStart) % 4 !== 0) dataview.setUint8(offset++, 0);
+      }
+      return buffer;
+    }
 
-      checkbox.addEventListener('change', () => {
-        const msg = checkbox.checked ? "mở" : "tắt";
-        console.log(`Gửi: esp32/device${i}/text - ${msg}`);
-        client.publish("esp32/device" + i + "/text", msg);
+    // Handle form submission
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const form = this;
+      const status = document.getElementById('status');
+      const formData = new FormData(form);
+      
+      fetch('/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (response.ok) {
+          status.textContent = '✅ Đã gửi ảnh lên ESP32!';
+          status.style.color = 'green';
+        } else {
+          status.textContent = '❌ Lỗi khi gửi ảnh!';
+          status.style.color = 'red';
+        }
+      })
+      .catch(error => {
+        status.textContent = '❌ Lỗi kết nối: ' + error.message;
+        status.style.color = 'red';
       });
-    }
-    while (devicesDiv.children.length > deviceCount) {
-      devicesDiv.removeChild(devicesDiv.lastChild);
-    }
-    updateDeviceGridLayout();
-    updateDeviceSelector();
-  }
-
-  function connectMQTT() {
-    client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
-      reconnectPeriod: 1000,
-      connectTimeout: 5000,
     });
-    const mqttStatus = document.getElementById("mqttStatus");
-    const deviceSelector = document.getElementById("deviceSelector");
-    const scheduleNoteContent = document.getElementById("scheduleNoteContent");
-
-    client.on('connect', () => {
-      mqttStatus.textContent = "🟢";
-      updateMqttStatus("connected");
-      client.subscribe("esp32/requestSync");
-      for (let i = 0; i < deviceCount; i++) {
-        client.subscribe("esp32/device" + i + "/status");
-        client.subscribe("esp32/device" + i + "/name");
-        client.subscribe("esp32/device" + i + "/setOnTime");
-        client.subscribe("esp32/device" + i + "/setOffTime");
-        client.publish("esp32/requestSync", "");
-      }
-      console.log(`Gửi: esp32/setDeviceCount - ${deviceCount}`);
-      client.publish("esp32/setDeviceCount", deviceCount.toString());
-      updateDevices();
-    });
-
-    client.on('message', (topic, message) => {
-      const msg = message.toString().trim();
-      console.log(`Nhận: ${topic} - ${msg}`);
-      for (let i = 0; i < deviceCount; i++) {
-        if (topic === "esp32/device" + i + "/status") {
-          document.getElementById("toggleSwitch" + i).checked = (msg === "on");
-        } else if (topic === "esp32/device" + i + "/name") {
-          document.getElementById("deviceName" + i).value = msg;
-          deviceNames[i] = msg;
-          // Cập nhật localStorage khi nhận tên từ ESP32
-          const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
-          savedDeviceNames[i] = msg;
-          localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
-          updateDeviceSelector();
-          updateScheduleNotes();
-        } else if (topic === "esp32/device" + i + "/setOnTime") {
-          scheduleHistory[i] = scheduleHistory[i] || { on: [], off: [] };
-          if (msg && msg.match(/^\d{2}:\d{2}$/) && !scheduleHistory[i].on.includes(msg)) {
-            scheduleHistory[i].on.push(msg);
-            if (scheduleHistory[i].on.length > 5) scheduleHistory[i].on.shift();
-          } else if (!msg) {
-            scheduleHistory[i].on = [];
-          }
-          updateScheduleNotes();
-        } else if (topic === "esp32/device" + i + "/setOffTime") {
-          scheduleHistory[i] = scheduleHistory[i] || { on: [], off: [] };
-          if (msg && msg.match(/^\d{2}:\d{2}$/) && !scheduleHistory[i].off.includes(msg)) {
-            scheduleHistory[i].off.push(msg);
-            if (scheduleHistory[i].off.length > 5) scheduleHistory[i].off.shift();
-          } else if (!msg) {
-            scheduleHistory[i].off = [];
-          }
-          updateScheduleNotes();
-        }
-      }
-    });
-
-    client.on('error', () => {
-      mqttStatus.textContent = "🔴";
-      updateMqttStatus("disconnected");
-    });
-
-    client.on('close', () => {
-      mqttStatus.textContent = "🔴";
-      updateMqttStatus("disconnected");
-    });
-  }
-
-  function updateDeviceSelector() {
-    const deviceSelector = document.getElementById('deviceSelector');
-    deviceSelector.innerHTML = '';
-    for (let j = 0; j < deviceCount; j++) {
-      if (deviceNames[j]) {
-        deviceSelector.innerHTML += `<option value="${j}">${deviceNames[j]}</option>`;
-      }
-    }
-  }
-
-  function setTime(type) {
-    const dev = document.getElementById("deviceSelector").value;
-    const val = document.getElementById(type === 'on' ? 'onTime' : 'offTime').value;
-    const topic = "esp32/device" + dev + "/set" + (type === 'on' ? "OnTime" : "OffTime");
-    if (val) {
-      client.publish(topic, val);
-      document.getElementById(type + 'TimeStatus').textContent = `Giờ ${type === 'on' ? 'mở' : 'tắt'}: ${val}`;
-    }
-  }
-
-  function clearTime(type) {
-    const dev = document.getElementById("deviceSelector").value;
-    const topic = "esp32/device" + dev + "/set" + (type === 'on' ? "OnTime" : "OffTime");
-    client.publish(topic, "");
-    document.getElementById(type + 'TimeStatus').textContent = `Đã xóa giờ ${type === 'on' ? 'mở' : 'tắt'}`;
-  }
-
-  function updateScheduleNotes() {
-    const scheduleNoteContent = document.getElementById("scheduleNoteContent");
-    let notes = "";
-    for (let i = 0; i < deviceCount; i++) {
-      if (deviceNames[i] && (scheduleHistory[i]?.on.length || scheduleHistory[i]?.off.length)) {
-        notes += `<strong>${deviceNames[i]}:</strong><br>`;
-        if (scheduleHistory[i]?.on.length) {
-          notes += `Giờ mở: ${scheduleHistory[i].on.join(', ')}<br>`;
-        }
-        if (scheduleHistory[i]?.off.length) {
-          notes += `Giờ tắt: ${scheduleHistory[i].off.join(', ')}<br>`;
-        }
-        notes += "<br>";
-      }
-    }
-    scheduleNoteContent.innerHTML = notes || "Chưa có lịch sử hẹn giờ.";
-  }
-
-  function toggleAll() {
-    const state = document.querySelectorAll('#devices input[type="checkbox"]:checked').length === deviceCount ? "tắt" : "mở";
-    for (let i = 0; i < deviceCount; i++) {
-      const checkbox = document.getElementById("toggleSwitch" + i);
-      checkbox.checked = (state === "mở");
-      client.publish("esp32/device" + i + "/text", state);
-      console.log(`Gửi: esp32/device${i}/text - ${state}`);
-    }
-  }
-
-  function clearAllSchedules() {
-    for (let i = 0; i < deviceCount; i++) {
-      client.publish("esp32/device" + i + "/setOnTime", "");
-      client.publish("esp32/device" + i + "/setOffTime", "");
-      scheduleHistory[i] = { on: [], off: [] };
-    }
-    updateScheduleNotes();
-  }
-
-  let recognition;
-  function startVoice() {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert("Trình duyệt không hỗ trợ Web Speech API");
-      return;
-    }
-
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = "vi-VN";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.start();
-    document.getElementById("voiceResult").textContent = "Đang nghe...";
-
-    // Dừng ghi âm sau 3 giây
-    setTimeout(() => {
-      recognition.stop();
-    }, 3000);
-
-    recognition.onresult = function(event) {
-      const transcript = event.results[0][0].transcript.toLowerCase();
-      document.getElementById("voiceResult").textContent = `Bạn nói: "${transcript}"`;
-
-      for (let i = 0; i < deviceCount; i++) {
-        if (deviceNames[i] && transcript.includes(deviceNames[i].toLowerCase())) {
-          if (transcript.includes("mở")) {
-            client.publish("esp32/device" + i + "/text", "mở");
-            document.getElementById("toggleSwitch" + i).checked = true;
-            document.getElementById("voiceResult").textContent += " Đã mở!";
-            return;
-          } else if (transcript.includes("tắt")) {
-            client.publish("esp32/device" + i + "/text", "tắt");
-            document.getElementById("toggleSwitch" + i).checked = false;
-            document.getElementById("voiceResult").textContent += " Đã tắt!";
-            return;
-          }
-        }
-      }
-      if (transcript.includes("mở tất cả")) {
-        toggleAll("mở");
-        document.getElementById("voiceResult").textContent += " Đã mở tất cả!";
-        return;
-      } else if (transcript.includes("tắt tất cả")) {
-        toggleAll("tắt");
-        document.getElementById("voiceResult").textContent += " Đã tắt tất cả!";
-        return;
-      }
-      document.getElementById("voiceResult").textContent += " Không hiểu lệnh!";
-    };
-
-    recognition.onerror = function() {
-      document.getElementById("voiceResult").textContent = "Lỗi khi nhận giọng nói!";
-    };
-
-    recognition.onend = function() {
-      document.getElementById("voiceResult").textContent = document.getElementById("voiceResult").textContent || "Ghi âm đã kết thúc!";
-    };
-  }
-</script>
+  </script>
 </body>
 </html>
-
