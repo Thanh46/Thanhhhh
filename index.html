@@ -15,7 +15,7 @@
       color: #333;
       text-align: center;
     }
-    input[type="file"], button {
+    input[type="file"], button, input[type="text"] {
       margin: 10px 0;
       padding: 10px;
       width: 100%;
@@ -53,6 +53,9 @@
     canvas {
       display: none;
     }
+    .error {
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -62,7 +65,8 @@
   <br><br>
   <a id="downloadLink">📥 Nhấn để tải file BMP</a>
   <br><br>
-  <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="text" id="espEndpoint" placeholder="Nhập endpoint ESP32 (ví dụ: http://esp32.local/upload hoặc http://192.168.1.100/upload)" required>
     <input type="file" id="bmpFile" name="file">
     <input type="submit" value="📤 Gửi lên ESP32">
   </form>
@@ -164,9 +168,15 @@
       e.preventDefault();
       const form = this;
       const status = document.getElementById('status');
+      const espEndpoint = document.getElementById('espEndpoint').value.trim();
+      if (!espEndpoint) {
+        status.textContent = "📡 Vui lòng nhập endpoint ESP32!";
+        status.style.color = 'red';
+        return;
+      }
+
       const formData = new FormData(form);
-      
-      fetch('/upload', {
+      fetch(espEndpoint, {
         method: 'POST',
         body: formData
       })
@@ -175,7 +185,7 @@
           status.textContent = '✅ Đã gửi ảnh lên ESP32!';
           status.style.color = 'green';
         } else {
-          status.textContent = '❌ Lỗi khi gửi ảnh!';
+          status.textContent = '❌ Lỗi khi gửi ảnh: ' + response.statusText;
           status.style.color = 'red';
         }
       })
