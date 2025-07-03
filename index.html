@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SMART MODULE</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -9,70 +10,71 @@
     body {
       font-family: 'Roboto', sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 4vw;
       background: linear-gradient(135deg, #1e3c72, #2a5298);
       min-height: 100vh;
       color: #e0e0e0;
       overflow-x: hidden;
+      font-size: 4.5vw; /* Tăng kích thước chữ để dễ đọc */
     }
     h1 {
-      font-size: 28px;
+      font-size: 6vw; /* Tiêu đề lớn hơn, dễ nhìn */
       color: #00d4ff;
-      text-align: left;
-      margin-bottom: 20px;
+      text-align: center;
+      margin-bottom: 4vw;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px #00d4ff, 0 0 20px #00d4ff;
+      letter-spacing: 0.3vw;
+      text-shadow: 0 0 1.5vw #00d4ff;
     }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 2vw;
     }
     #clock {
-      font-size: 16px;
+      font-size: 3.5vw;
       color: #b3e5fc;
-      animation: none;
     }
     .box {
-      max-width: 1000px;
+      max-width: 100%;
       margin: 0 auto;
-      padding: 30px;
-      border-radius: 15px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      padding: 5vw;
+      border-radius: 3vw;
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 1.5vw 5vw rgba(0, 0, 0, 0.3);
     }
     input, select, button {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
+      padding: 3vw;
+      margin: 2vw 0;
       box-sizing: border-box;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      font-size: 14px;
-      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 2vw;
+      font-size: 4vw;
+      background: rgba(255, 255, 255, 0.1);
       color: #e0e0e0;
       transition: all 0.3s ease;
     }
     input:focus, select:focus {
       border-color: #00d4ff;
       outline: none;
-      box-shadow: 0 0 10px #00d4ff;
+      box-shadow: 0 0 2vw #00d4ff;
     }
     .hidden { display: none; }
     .status {
       text-align: center;
-      margin: 10px 0;
-      font-size: 24px;
+      margin: 3vw 0;
+      font-size: 6vw;
     }
     .mqtt-led {
-      width: 10px;
-      height: 10px;
+      width: 3vw;
+      height: 3vw;
       background: #ff0000;
       border-radius: 50%;
       display: inline-block;
-      margin-left: 10px;
+      margin-left: 2vw;
       transition: background 0.5s;
     }
     .mqtt-led.connected {
@@ -80,42 +82,42 @@
     }
     .device-grid {
       display: grid;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 3vw;
+      margin-bottom: 4vw;
+      grid-template-columns: 1fr; /* Chỉ 1 cột cho di động */
     }
     .device-group {
-      padding: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.05);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
+      padding: 3vw;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 2vw;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 1vw 3vw rgba(0, 0, 0, 0.2);
       text-align: center;
     }
     .device-group:hover {
-      transform: translateY(-5px);
+      transform: none; /* Bỏ hiệu ứng hover để đơn giản hóa */
     }
     .device-group input {
-      width: 80%;
-      margin: 5px auto;
-      font-size: 12px;
+      width: 95%;
+      margin: 2vw auto;
+      font-size: 4vw;
     }
     .device-group .button-group {
       display: flex;
       justify-content: center;
-      gap: 5px;
+      gap: 2vw;
     }
     .device-group button {
-      width: 40px;
-      padding: 5px;
-      font-size: 12px;
+      width: 20vw;
+      padding: 2vw;
+      font-size: 3.5vw;
     }
     .switch {
       position: relative;
       display: inline-block;
-      width: 60px;
-      height: 34px;
-      margin-top: 5px;
+      width: 15vw;
+      height: 8vw;
+      margin-top: 2vw;
     }
     .switch input {
       opacity: 0;
@@ -131,15 +133,15 @@
       bottom: 0;
       background-color: #555;
       transition: .4s;
-      border-radius: 34px;
+      border-radius: 8vw;
     }
     .slider:before {
       position: absolute;
       content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
+      height: 6vw;
+      width: 6vw;
+      left: 1vw;
+      bottom: 1vw;
       background-color: #fff;
       transition: .4s;
       border-radius: 50%;
@@ -148,7 +150,7 @@
       background-color: #00ff95;
     }
     input:checked + .slider:before {
-      transform: translateX(26px);
+      transform: translateX(7vw);
     }
     .slider:hover {
       background-color: #777;
@@ -161,8 +163,8 @@
       color: white;
       border: none;
       cursor: pointer;
-      padding: 12px;
-      border-radius: 8px;
+      padding: 3vw;
+      border-radius: 2vw;
       transition: all 0.3s ease;
     }
     button:hover {
@@ -171,31 +173,58 @@
     }
     #voiceResult {
       text-align: center;
-      margin-top: 10px;
-      font-size: 14px;
+      margin-top: 3vw;
+      font-size: 4vw;
       color: #00ff95;
-      animation: none;
     }
     #wifiStatusText {
-      font-size: 14px;
+      font-size: 3.5vw;
       color: #b3e5fc;
-      margin-top: 10px;
+      margin-top: 3vw;
       text-align: center;
     }
-    @keyframes fadeIn {
-      from { opacity: 0.7; }
-      to { opacity: 1; }
+    .schedule-note {
+      font-size: 3.5vw;
+      margin-top: 3vw;
     }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    @media (max-width: 320px) {
+      body {
+        padding: 3vw;
+        font-size: 4.2vw;
+      }
+      h1 {
+        font-size: 5.5vw;
+      }
+      .box {
+        padding: 4vw;
+      }
+      input, select, button {
+        padding: 2.5vw;
+        font-size: 3.8vw;
+      }
+      .device-group button {
+        width: 18vw;
+        font-size: 3.2vw;
+      }
+      .switch {
+        width: 13vw;
+        height: 7vw;
+      }
+      .slider:before {
+        height: 5.5vw;
+        width: 5.5vw;
+        left: 0.8vw;
+        bottom: 0.8vw;
+      }
+      input:checked + .slider:before {
+        transform: translateX(6.5vw);
+      }
     }
   </style>
 </head>
 <body>
 
-<div class="box hidden" id="deviceSelectBox">
+<div class="box" id="deviceSelectBox">
   <div class="header">
     <h1>Chọn số thiết bị</h1>
     <div id="clock"></div>
@@ -245,18 +274,15 @@
   <button onclick="setTime('on')">Đặt giờ mở</button>
   <button onclick="clearTime('on')">Xóa</button>
   <div id="onTimeStatus"></div>
-
   <label>Giờ tắt:</label>
   <input type="time" id="offTime">
   <button onclick="setTime('off')">Đặt giờ tắt</button>
   <button onclick="clearTime('off')">Xóa</button>
   <div id="offTimeStatus"></div>
-
   <div class="schedule-note" id="scheduleNotes">
     <strong>Lịch sử hẹn giờ:</strong><br>
     <span id="scheduleNoteContent"></span>
   </div>
-
   <button onclick="clearAllSchedules()">Xóa tất cả</button>
   <button onclick="showPage('controlBox')">Trở về</button>
 </div>
@@ -270,9 +296,12 @@
   let deviceCount = parseInt(localStorage.getItem(DEVICE_COUNT_KEY)) || 0;
 
   function showPage(id) {
-    ['deviceSelectBox', 'controlBox', 'scheduleBox'].forEach(box =>
-      document.getElementById(box).classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
+    ['deviceSelectBox', 'controlBox', 'scheduleBox'].forEach(box => {
+      const element = document.getElementById(box);
+      if (element) element.classList.add('hidden');
+    });
+    const target = document.getElementById(id);
+    if (target) target.classList.remove('hidden');
   }
 
   function updateClock() {
@@ -287,7 +316,7 @@
   function saveDeviceCount() {
     deviceCount = parseInt(document.getElementById('deviceCount').value);
     localStorage.setItem(DEVICE_COUNT_KEY, deviceCount);
-    if (client && client.connected()) {
+    if (client && client.isConnected()) {
       console.log(`Gửi: esp32/setDeviceCount - ${deviceCount}`);
       client.publish("esp32/setDeviceCount", deviceCount.toString());
     }
@@ -315,28 +344,23 @@
 
   function updateDeviceGridLayout() {
     const devicesDiv = document.getElementById("devices");
-    if (deviceCount <= 2) {
-      devicesDiv.style.gridTemplateColumns = "1fr";
-    } else if (deviceCount <= 4) {
-      devicesDiv.style.gridTemplateColumns = "repeat(2, 1fr)";
-    } else if (deviceCount <= 6) {
-      devicesDiv.style.gridTemplateColumns = "repeat(3, 1fr)";
-    } else {
-      devicesDiv.style.gridTemplateColumns = "repeat(4, 1fr)";
-    }
+    devicesDiv.style.gridTemplateColumns = "1fr"; // Chỉ 1 cột trên di động
   }
 
   function updateMqttStatus(state) {
     const mqttLed = document.getElementById("mqttLed");
-    if (state === "connected") {
-      mqttLed.classList.add('connected');
-    } else {
-      mqttLed.classList.remove('connected');
+    if (mqttLed) {
+      if (state === "connected") {
+        mqttLed.classList.add('connected');
+      } else {
+        mqttLed.classList.remove('connected');
+      }
     }
   }
 
   function updateDevices() {
     const devicesDiv = document.getElementById("devices");
+    if (!devicesDiv) return;
     while (devicesDiv.children.length < deviceCount) {
       const i = devicesDiv.children.length;
       const div = document.createElement("div");
@@ -355,36 +379,42 @@
       `;
       devicesDiv.appendChild(div);
 
-      const nameInput = document.getElementById("deviceName" + i);
-      const editBtn = document.getElementById("editNameBtn" + i);
-      const saveBtn = document.getElementById("saveNameBtn" + i);
-      const checkbox = document.getElementById("toggleSwitch" + i);
+      const nameInput = document.getElementById(`deviceName${i}`);
+      const editBtn = document.getElementById(`editNameBtn${i}`);
+      const saveBtn = document.getElementById(`saveNameBtn${i}`);
+      const checkbox = document.getElementById(`toggleSwitch${i}`);
 
-      editBtn.onclick = () => {
-        nameInput.readOnly = false;
-        saveBtn.disabled = false;
-      };
+      if (editBtn) {
+        editBtn.onclick = () => {
+          nameInput.readOnly = false;
+          saveBtn.disabled = false;
+        };
+      }
 
-      saveBtn.onclick = () => {
-        const newName = nameInput.value.trim();
-        if (newName) {
-          client.publish("esp32/device" + i + "/name", newName);
-          nameInput.readOnly = true;
-          saveBtn.disabled = true;
-          deviceNames[i] = newName;
-          const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
-          savedDeviceNames[i] = newName;
-          localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
-          updateDeviceSelector();
-          updateScheduleNotes();
-        }
-      };
+      if (saveBtn) {
+        saveBtn.onclick = () => {
+          const newName = nameInput.value.trim();
+          if (newName) {
+            client.publish(`esp32/device${i}/name`, newName);
+            nameInput.readOnly = true;
+            saveBtn.disabled = true;
+            deviceNames[i] = newName;
+            const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
+            savedDeviceNames[i] = newName;
+            localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
+            updateDeviceSelector();
+            updateScheduleNotes();
+          }
+        };
+      }
 
-      checkbox.addEventListener('change', () => {
-        const msg = checkbox.checked ? "mở" : "tắt";
-        console.log(`Gửi: esp32/device${i}/text - ${msg}`);
-        client.publish("esp32/device" + i + "/text", msg);
-      });
+      if (checkbox) {
+        checkbox.addEventListener('change', () => {
+          const msg = checkbox.checked ? "mở" : "tắt";
+          console.log(`Gửi: esp32/device${i}/text - ${msg}`);
+          client.publish(`esp32/device${i}/text`, msg);
+        });
+      }
     }
     while (devicesDiv.children.length > deviceCount) {
       devicesDiv.removeChild(devicesDiv.lastChild);
@@ -403,14 +433,14 @@
     const scheduleNoteContent = document.getElementById("scheduleNoteContent");
 
     client.on('connect', () => {
-      mqttStatus.textContent = "🟢";
+      if (mqttStatus) mqttStatus.textContent = "🟢";
       updateMqttStatus("connected");
       client.subscribe("esp32/requestSync");
       for (let i = 0; i < deviceCount; i++) {
-        client.subscribe("esp32/device" + i + "/status");
-        client.subscribe("esp32/device" + i + "/name");
-        client.subscribe("esp32/device" + i + "/setOnTime");
-        client.subscribe("esp32/device" + i + "/setOffTime");
+        client.subscribe(`esp32/device${i}/status`);
+        client.subscribe(`esp32/device${i}/name`);
+        client.subscribe(`esp32/device${i}/setOnTime`);
+        client.subscribe(`esp32/device${i}/setOffTime`);
         client.publish("esp32/requestSync", "");
       }
       console.log(`Gửi: esp32/setDeviceCount - ${deviceCount}`);
@@ -422,17 +452,21 @@
       const msg = message.toString().trim();
       console.log(`Nhận: ${topic} - ${msg}`);
       for (let i = 0; i < deviceCount; i++) {
-        if (topic === "esp32/device" + i + "/status") {
-          document.getElementById("toggleSwitch" + i).checked = (msg === "on");
-        } else if (topic === "esp32/device" + i + "/name") {
-          document.getElementById("deviceName" + i).value = msg;
-          deviceNames[i] = msg;
-          const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
-          savedDeviceNames[i] = msg;
-          localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
-          updateDeviceSelector();
-          updateScheduleNotes();
-        } else if (topic === "esp32/device" + i + "/setOnTime") {
+        if (topic === `esp32/device${i}/status`) {
+          const toggleSwitch = document.getElementById(`toggleSwitch${i}`);
+          if (toggleSwitch) toggleSwitch.checked = (msg === "on");
+        } else if (topic === `esp32/device${i}/name`) {
+          const deviceNameInput = document.getElementById(`deviceName${i}`);
+          if (deviceNameInput) {
+            deviceNameInput.value = msg;
+            deviceNames[i] = msg;
+            const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
+            savedDeviceNames[i] = msg;
+            localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
+            updateDeviceSelector();
+            updateScheduleNotes();
+          }
+        } else if (topic === `esp32/device${i}/setOnTime`) {
           scheduleHistory[i] = scheduleHistory[i] || { on: [], off: [] };
           if (msg && msg.match(/^\d{2}:\d{2}$/) && !scheduleHistory[i].on.includes(msg)) {
             scheduleHistory[i].on.push(msg);
@@ -441,12 +475,12 @@
             scheduleHistory[i].on = [];
           }
           updateScheduleNotes();
-        } else if (topic === "esp32/device" + i + "/setOffTime") {
+        } else if (topic === `esp32/device${i}/setOffTime`) {
           scheduleHistory[i] = scheduleHistory[i] || { on: [], off: [] };
           if (msg && msg.match(/^\d{2}:\d{2}$/) && !scheduleHistory[i].off.includes(msg)) {
             scheduleHistory[i].off.push(msg);
             if (scheduleHistory[i].off.length > 5) scheduleHistory[i].off.shift();
-          } else if (!msgenant) {
+          } else if (!msg) {
             scheduleHistory[i].off = [];
           }
           updateScheduleNotes();
@@ -455,75 +489,85 @@
     });
 
     client.on('error', () => {
-      mqttStatus.textContent = "🔴";
+      if (mqttStatus) mqttStatus.textContent = "🔴";
       updateMqttStatus("disconnected");
     });
 
     client.on('close', () => {
-      mqttStatus.textContent = "🔴";
+      if (mqttStatus) mqttStatus.textContent = "🔴";
       updateMqttStatus("disconnected");
     });
   }
 
   function updateDeviceSelector() {
     const deviceSelector = document.getElementById('deviceSelector');
-    deviceSelector.innerHTML = '';
-    for (let j = 0; j < deviceCount; j++) {
-      if (deviceNames[j]) {
-        deviceSelector.innerHTML += `<option value="${j}">${deviceNames[j]}</option>`;
+    if (deviceSelector) {
+      deviceSelector.innerHTML = '';
+      for (let j = 0; j < deviceCount; j++) {
+        if (deviceNames[j]) {
+          deviceSelector.innerHTML += `<option value="${j}">${deviceNames[j]}</option>`;
+        } else {
+          deviceSelector.innerHTML += `<option value="${j}">Thiết bị ${j + 1}</option>`;
+        }
       }
     }
   }
 
   function setTime(type) {
-    const dev = document.getElementById("deviceSelector").value;
-    const val = document.getElementById(type === 'on' ? 'onTime' : 'offTime').value;
-    const topic = "esp32/device" + dev + "/set" + (type === 'on' ? "OnTime" : "OffTime");
-    if (val) {
+    const dev = document.getElementById("deviceSelector")?.value;
+    const val = document.getElementById(type === 'on' ? 'onTime' : 'offTime')?.value;
+    if (dev && val) {
+      const topic = `esp32/device${dev}/set${type === 'on' ? 'OnTime' : 'OffTime'}`;
       client.publish(topic, val);
-      document.getElementById(type + 'TimeStatus').textContent = `Giờ ${type === 'on' ? 'mở' : 'tắt'}: ${val}`;
+      document.getElementById(`${type}TimeStatus`).textContent = `Giờ ${type === 'on' ? 'mở' : 'tắt'}: ${val}`;
     }
   }
 
   function clearTime(type) {
-    const dev = document.getElementById("deviceSelector").value;
-    const topic = "esp32/device" + dev + "/set" + (type === 'on' ? "OnTime" : "OffTime");
-    client.publish(topic, "");
-    document.getElementById(type + 'TimeStatus').textContent = `Đã xóa giờ ${type === 'on' ? 'mở' : 'tắt'}`;
+    const dev = document.getElementById("deviceSelector")?.value;
+    if (dev) {
+      const topic = `esp32/device${dev}/set${type === 'on' ? 'OnTime' : 'OffTime'}`;
+      client.publish(topic, "");
+      document.getElementById(`${type}TimeStatus`).textContent = `Đã xóa giờ ${type === 'on' ? 'mở' : 'tắt'}`;
+    }
   }
 
   function updateScheduleNotes() {
     const scheduleNoteContent = document.getElementById("scheduleNoteContent");
-    let notes = "";
-    for (let i = 0; i < deviceCount; i++) {
-      if (deviceNames[i] && (scheduleHistory[i]?.on.length || scheduleHistory[i]?.off.length)) {
-        notes += `<strong>${deviceNames[i]}:</strong><br>`;
-        if (scheduleHistory[i]?.on.length) {
-          notes += `Giờ mở: ${scheduleHistory[i].on.join(', ')}<br>`;
+    if (scheduleNoteContent) {
+      let notes = "";
+      for (let i = 0; i < deviceCount; i++) {
+        if (deviceNames[i] && (scheduleHistory[i]?.on.length || scheduleHistory[i]?.off.length)) {
+          notes += `<strong>${deviceNames[i]}:</strong><br>`;
+          if (scheduleHistory[i]?.on.length) {
+            notes += `Giờ mở: ${scheduleHistory[i].on.join(', ')}<br>`;
+          }
+          if (scheduleHistory[i]?.off.length) {
+            notes += `Giờ tắt: ${scheduleHistory[i].off.join(', ')}<br>`;
+          }
+          notes += "<br>";
         }
-        if (scheduleHistory[i]?.off.length) {
-          notes += `Giờ tắt: ${scheduleHistory[i].off.join(', ')}<br>`;
-        }
-        notes += "<br>";
       }
+      scheduleNoteContent.innerHTML = notes || "Chưa có lịch sử hẹn giờ.";
     }
-    scheduleNoteContent.innerHTML = notes || "Chưa có lịch sử hẹn giờ.";
   }
 
   function toggleAll() {
     const state = document.querySelectorAll('#devices input[type="checkbox"]:checked').length === deviceCount ? "tắt" : "mở";
     for (let i = 0; i < deviceCount; i++) {
-      const checkbox = document.getElementById("toggleSwitch" + i);
-      checkbox.checked = (state === "mở");
-      client.publish("esp32/device" + i + "/text", state);
-      console.log(`Gửi: esp32/device${i}/text - ${state}`);
+      const checkbox = document.getElementById(`toggleSwitch${i}`);
+      if (checkbox) {
+        checkbox.checked = (state === "mở");
+        client.publish(`esp32/device${i}/text`, state);
+        console.log(`Gửi: esp32/device${i}/text - ${state}`);
+      }
     }
   }
 
   function clearAllSchedules() {
     for (let i = 0; i < deviceCount; i++) {
-      client.publish("esp32/device" + i + "/setOnTime", "");
-      client.publish("esp32/device" + i + "/setOffTime", "");
+      client.publish(`esp32/device${i}/setOnTime`, "");
+      client.publish(`esp32/device${i}/setOffTime`, "");
       scheduleHistory[i] = { on: [], off: [] };
     }
     updateScheduleNotes();
@@ -555,24 +599,24 @@
       for (let i = 0; i < deviceCount; i++) {
         if (deviceNames[i] && transcript.includes(deviceNames[i].toLowerCase())) {
           if (transcript.includes("mở")) {
-            client.publish("esp32/device" + i + "/text", "mở");
-            document.getElementById("toggleSwitch" + i).checked = true;
+            client.publish(`esp32/device${i}/text`, "mở");
+            document.getElementById(`toggleSwitch${i}`).checked = true;
             document.getElementById("voiceResult").textContent += " Đã mở!";
             return;
           } else if (transcript.includes("tắt")) {
-            client.publish("esp32/device" + i + "/text", "tắt");
-            document.getElementById("toggleSwitch" + i).checked = false;
+            client.publish(`esp32/device${i}/text`, "tắt");
+            document.getElementById(`toggleSwitch${i}`).checked = false;
             document.getElementById("voiceResult").textContent += " Đã tắt!";
             return;
           }
         }
       }
       if (transcript.includes("mở tất cả")) {
-        toggleAll("mở");
+        toggleAll();
         document.getElementById("voiceResult").textContent += " Đã mở tất cả!";
         return;
       } else if (transcript.includes("tắt tất cả")) {
-        toggleAll("tắt");
+        toggleAll();
         document.getElementById("voiceResult").textContent += " Đã tắt tất cả!";
         return;
       }
