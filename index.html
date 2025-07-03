@@ -32,7 +32,7 @@
     #clock {
       font-size: 16px;
       color: #b3e5fc;
-      animation: none; /* Tạm vô hiệu hóa animation */
+      animation: none;
     }
     .box {
       max-width: 1000px;
@@ -174,7 +174,7 @@
       margin-top: 10px;
       font-size: 14px;
       color: #00ff95;
-      animation: none; /* Tạm vô hiệu hóa animation */
+      animation: none;
     }
     #wifiStatusText {
       font-size: 14px;
@@ -194,19 +194,6 @@
   </style>
 </head>
 <body>
-
-<div class="box" id="loginBox">
-  <div class="header">
-    <h1>SMART MODULE</h1>
-    <div id="clock"></div>
-  </div>
-  <div class="status" id="mqttStatus">⏳ <span class="mqtt-led" id="mqttLed"></span></div>
-  <div id="wifiStatusText"></div>
-  <input type="text" id="username" placeholder="Tên đăng nhập">
-  <input type="password" id="password" placeholder="Mật khẩu">
-  <label><input type="checkbox" id="rememberMe"> Nhớ tài khoản</label>
-  <button onclick="login()">Đăng nhập</button>
-</div>
 
 <div class="box hidden" id="deviceSelectBox">
   <div class="header">
@@ -243,7 +230,6 @@
   <button onclick="startVoice()">Nói để điều khiển</button>
   <div id="voiceResult"></div>
   <button onclick="showPage('scheduleBox')">Hẹn giờ</button>
-  <button onclick="logout()">Đăng xuất</button>
 </div>
 
 <div class="box hidden" id="scheduleBox">
@@ -276,16 +262,15 @@
 </div>
 
 <script>
-  const STORAGE_KEY = 'tbt_credentials';
   const DEVICE_COUNT_KEY = 'tbt_device_count';
-  const DEVICE_NAMES_KEY = 'tbt_device_names'; // Key để lưu tên thiết bị
+  const DEVICE_NAMES_KEY = 'tbt_device_names';
   let client;
   let deviceNames = Array(8).fill("");
   let scheduleHistory = {};
   let deviceCount = parseInt(localStorage.getItem(DEVICE_COUNT_KEY)) || 0;
 
   function showPage(id) {
-    ['loginBox', 'deviceSelectBox', 'controlBox', 'scheduleBox'].forEach(box =>
+    ['deviceSelectBox', 'controlBox', 'scheduleBox'].forEach(box =>
       document.getElementById(box).classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
   }
@@ -298,23 +283,6 @@
   }
   setInterval(updateClock, 1000);
   updateClock();
-
-  function login() {
-    const user = document.getElementById("username").value.trim();
-    const pass = document.getElementById("password").value;
-    const remember = document.getElementById("rememberMe").checked;
-    if (user === "Chu_may_001" && pass === "123456789") {
-      if (remember) localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, pass }));
-      if (deviceCount > 0) {
-        showPage('controlBox');
-        connectMQTT();
-      } else {
-        showPage('deviceSelectBox');
-      }
-    } else {
-      alert("Sai tài khoản hoặc mật khẩu!");
-    }
-  }
 
   function saveDeviceCount() {
     deviceCount = parseInt(document.getElementById('deviceCount').value);
@@ -332,21 +300,16 @@
     }
   }
 
-  function logout() {
-    localStorage.removeItem(STORAGE_KEY);
-    showPage('loginBox');
-  }
-
   window.onload = () => {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (stored) {
-      document.getElementById("username").value = stored.user;
-      document.getElementById("password").value = stored.pass;
-    }
-    // Tải lại tên thiết bị từ localStorage
     const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
     for (let i = 0; i < 8; i++) {
       deviceNames[i] = savedDeviceNames[i] || "";
+    }
+    if (deviceCount > 0) {
+      showPage('controlBox');
+      connectMQTT();
+    } else {
+      showPage('deviceSelectBox');
     }
   };
 
@@ -409,7 +372,6 @@
           nameInput.readOnly = true;
           saveBtn.disabled = true;
           deviceNames[i] = newName;
-          // Lưu tên thiết bị vào localStorage
           const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
           savedDeviceNames[i] = newName;
           localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
@@ -465,7 +427,6 @@
         } else if (topic === "esp32/device" + i + "/name") {
           document.getElementById("deviceName" + i).value = msg;
           deviceNames[i] = msg;
-          // Cập nhật localStorage khi nhận tên từ ESP32
           const savedDeviceNames = JSON.parse(localStorage.getItem(DEVICE_NAMES_KEY)) || {};
           savedDeviceNames[i] = msg;
           localStorage.setItem(DEVICE_NAMES_KEY, JSON.stringify(savedDeviceNames));
@@ -485,7 +446,7 @@
           if (msg && msg.match(/^\d{2}:\d{2}$/) && !scheduleHistory[i].off.includes(msg)) {
             scheduleHistory[i].off.push(msg);
             if (scheduleHistory[i].off.length > 5) scheduleHistory[i].off.shift();
-          } else if (!msg) {
+          } else if (!msgenant) {
             scheduleHistory[i].off = [];
           }
           updateScheduleNotes();
@@ -583,7 +544,6 @@
     recognition.start();
     document.getElementById("voiceResult").textContent = "Đang nghe...";
 
-    // Dừng ghi âm sau 3 giây
     setTimeout(() => {
       recognition.stop();
     }, 3000);
@@ -630,4 +590,3 @@
 </script>
 </body>
 </html>
-
